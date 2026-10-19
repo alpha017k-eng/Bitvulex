@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  try{
+    var override = localStorage.getItem('bitvulex_theme_override');
+    var theme = override;
+    if(!theme){
+      var raw = localStorage.getItem('bitvulex_data');
+      if(raw){ var d = JSON.parse(raw); theme = d && d.settings && d.settings.theme; }
+    }
+    document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light');
+  }catch(e){}
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — Bitvulex</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#060818">
+<link rel="icon" href="../../assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="192x192" href="../../assets/favicon-192.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="admin-theme">
+<canvas id="bg-particles" class="bg-particles" aria-hidden="true"></canvas>
+<div class="aurora" aria-hidden="true"></div>
+
+<!-- ===================== LOGIN ===================== -->
+<div class="login-shell" id="login-shell">
+  <div class="login-box">
+    <div style="display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:26px; position:relative;">
+      <span class="brand-lg">
+        <span class="logo-orb" style="--size:46px;"><img src="../../assets/logo-mark.png" alt="Bitvulex logo"></span>
+        <span class="brand-word">Bitvulex</span>
+      </span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle light / dark theme" title="Toggle theme" style="position:absolute; right:0;">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </div>
+    <form id="login-form">
+      <div class="field">
+        <label for="login-user">Username</label>
+        <input type="text" id="login-user" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="login-pass">Password</label>
+        <div class="pass-field">
+          <input type="password" id="login-pass" required autocomplete="current-password">
+          <button type="button" class="pass-eye" data-eye-for="login-pass" aria-label="Show password" title="Show password">
+            <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a20.6 20.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a20.6 20.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="login-submit-btn">Log in</button>
+      <div class="form-status" id="login-status"></div>
+    </form>
+
+    <!-- OTP step: shown after a correct username/password, when two-factor
+         verification is turned on (Admin > Site Settings). -->
+    <form id="otp-form" style="display:none;">
+      <p style="text-align:center; font-size:13px; color:var(--ink-mute); margin:0 0 18px 0;">
+        Enter the 6-digit code we sent to <strong id="otp-masked-email" style="color:var(--ink-dim);"></strong>
+      </p>
+      <div class="field">
+        <label for="otp-input">Verification code</label>
+        <input type="text" id="otp-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" class="otp-code-input" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="otp-submit-btn">Verify &amp; log in</button>
+      <div class="form-status" id="otp-status"></div>
+      <div class="otp-links">
+        <a href="#" id="otp-resend-link">Resend code</a>
+        <a href="#" id="otp-back-link">Use a different account</a>
+      </div>
+    </form>
+
+    <p style="text-align:center; margin-top:18px;" id="login-back-link"><a href="../../index.html" style="color:var(--ink-mute); font-size:13px;">← Back to website</a></p>
+  </div>
+</div>
+
+<!-- ===================== ADMIN SHELL ===================== -->
+<div class="admin-shell" id="admin-shell" style="display:none;">
+
+  <!-- App-style bottom tab bar (phones/tablets only, see css @max-width:860px).
+       Primary panels sit here; "Menu" opens the full nav as a slide-up sheet
+       so every panel (including admin-only ones) stays reachable without
+       cluttering the bar — it reuses the existing .admin-nav list. -->
+  <nav class="admin-bottom-nav" id="admin-bottom-nav" aria-label="Admin quick navigation">
+    <button type="button" class="abn-btn active" data-panel="dashboard">
+      <span class="abn-icon">📊</span><span>Home</span>
+    </button>
+    <button type="button" class="abn-btn" data-panel="packages">
+      <span class="abn-icon">📦</span><span>Services</span>
+    </button>
+    <button type="button" class="abn-btn" data-panel="messages">
+      <span class="abn-icon">✉️<span class="abn-badge" id="abn-notif-badge"></span></span><span>Messages</span>
+    </button>
+    <button type="button" class="abn-btn" data-panel="stats">
+      <span class="abn-icon">📈</span><span>Stats</span>
+    </button>
+    <button type="button" class="abn-btn" id="admin-bottom-menu-btn">
+      <span class="abn-icon">☰</span><span>Menu</span>
+    </button>
+  </nav>
+
+  <!-- Floating profile access, pinned bottom-left (phones/tablets only) -->
+  <div class="admin-profile-fab-wrap" id="admin-profile-fab-wrap">
+    <button type="button" class="admin-profile-fab" id="admin-profile-fab" aria-label="Account menu" aria-expanded="false">
+      <span id="mobile-avatar">B</span>
+    </button>
+    <div class="admin-profile-pop" id="admin-profile-pop">
+      <div class="admin-profile-pop-head">
+        <span class="admin-avatar" id="mobile-avatar-lg">B</span>
+        <div>
+          <b id="mobile-pop-username">—</b>
+          <span class="badge" id="mobile-pop-role">—</span>
+        </div>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm btn-block" id="mobile-pop-account">My account</button>
+      <button type="button" class="btn btn-ghost btn-sm btn-block" id="mobile-pop-theme">Toggle theme</button>
+      <a href="../../index.html" class="btn btn-ghost btn-sm btn-block">View site</a>
+      <button type="button" class="btn btn-ghost btn-sm btn-block" id="mobile-pop-logout">Log out</button>
+    </div>
+  </div>
+
+  <aside class="admin-sidebar">
+    <div class="admin-brand">
+      <span class="logo-orb" style="--size:28px;"><img src="../../assets/logo-mark.png" alt="Bitvulex logo"></span>
+      <span>Bitvulex</span>
+      <button class="admin-mobile-toggle" id="admin-mobile-toggle" aria-label="Toggle menu" style="margin-left:auto;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+    <nav class="admin-nav">
+      <button data-panel="dashboard" class="active">📊 Dashboard</button>
+      <div class="admin-nav-label">CRM</div>
+      <button data-panel="leads">🧭 Leads</button>
+      <button data-panel="messages">✉️ Messages</button>
+      <div class="admin-nav-label">Website</div>
+      <button data-panel="packages">📦 Services & Packages</button>
+      <button data-panel="reviews" id="nav-reviews">⭐ Reviews</button>
+      <button data-panel="team" id="nav-team">👥 Team</button>
+      <button data-panel="projects">🖼️ Demo Projects</button>
+      <button data-panel="social">🔗 Social Links</button>
+      <div class="admin-nav-label">Insights</div>
+      <button data-panel="stats">📈 Growth Stats</button>
+      <button data-panel="seo">🔍 SEO Assistant</button>
+      <div class="admin-nav-label">Admin</div>
+      <button data-panel="settings">⚙️ Site Settings</button>
+      <button data-panel="users" id="nav-users">🔐 Users & Roles</button>
+      <button data-panel="account" id="nav-account">🙍 My Account</button>
+    </nav>
+    <div style="margin-top:24px; padding-top:18px; border-top:1px solid var(--line);">
+      <div style="font-size:13px; color:var(--ink-mute); margin-bottom:10px;" id="whoami"></div>
+      <div style="display:flex; gap:8px; margin-bottom:8px;">
+        <button class="btn btn-ghost btn-sm" style="flex:1;" id="logout-btn">Log out</button>
+        <button class="theme-toggle" id="theme-toggle-sidebar" aria-label="Toggle light / dark theme" title="Toggle theme">
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+      </div>
+      <a href="../../index.html" class="btn btn-ghost btn-sm btn-block">View site</a>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+
+    <div class="admin-welcome-bar">
+      <div>
+        <h1>Welcome, <span id="welcome-name">there</span></h1>
+        <p class="sub">Here's what's happening with your site today.</p>
+      </div>
+      <div class="admin-welcome-actions">
+        <div class="notif-wrap">
+          <button class="admin-icon-btn" id="notif-bell-btn" aria-label="Notifications" title="Client messages">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            <span class="notif-badge" id="notif-badge"></span>
+          </button>
+          <div class="notif-panel" id="notif-panel">
+            <div class="notif-panel-head"><span>Client messages</span><a href="#" data-notif-goto-messages style="font-size:12px; color:var(--cyan-soft);">View all</a></div>
+            <div id="notif-list"></div>
+          </div>
+        </div>
+        <button class="admin-icon-btn" id="notif-settings-btn" aria-label="Site settings" title="Site settings" data-panel="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z"/></svg>
+        </button>
+        <div class="admin-who">
+          <span class="admin-avatar" id="welcome-avatar">B</span>
+          <div class="admin-who-text">
+            <b id="welcome-username">—</b>
+            <span id="welcome-role">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <section class="admin-panel active" id="panel-dashboard">
+      <div class="admin-topbar">
+        <h1>Dashboard</h1>
+        <button class="btn btn-ghost btn-sm" id="clear-analytics-btn">Reset analytics</button>
+      </div>
+
+      <div class="dash-note">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="16.3" r="0.6" fill="currentColor" stroke="none"/></svg>
+        <span>Traffic, scroll and demand numbers below are tracked in each visitor's own browser (like Messages) — there's no server. They're accurate for testing and for any single visitor's device; for real aggregated, cross-visitor site traffic once this is live, connect an analytics service such as Plausible or GA4 alongside this.</span>
+      </div>
+
+      <div class="quick-actions-row">
+        <button type="button" class="quick-action-btn" data-quick-panel="messages">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v12H8l-4 4Z"/></svg>
+          View messages
+        </button>
+        <button type="button" class="quick-action-btn" data-quick-panel="services">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="4" x2="8" y2="9"/></svg>
+          Manage services
+        </button>
+        <button type="button" class="quick-action-btn" data-quick-panel="team">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c1-3.6 3.4-5.4 5.5-5.4s4.5 1.8 5.5 5.4"/><circle cx="17" cy="8.5" r="2.4"/><path d="M15.8 14.7c2 .3 3.7 1.9 4.5 5"/></svg>
+          Team
+        </button>
+        <button type="button" class="quick-action-btn" data-quick-panel="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z"/></svg>
+          Site settings
+        </button>
+      </div>
+
+      <div class="dash-section-title">Content overview</div>
+      <div class="stat-grid" style="margin-bottom:6px;">
+        <div class="stat-tile accent-cyan">
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="4" x2="8" y2="9"/></svg></div>
+          <div class="stat-value" id="stat-services">–</div>
+          <div class="stat-label">Services listed</div>
+        </div>
+        <div class="stat-tile accent-purple">
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c1-3.6 3.4-5.4 5.5-5.4s4.5 1.8 5.5 5.4"/><circle cx="17" cy="8.5" r="2.4"/><path d="M15.8 14.7c2 .3 3.7 1.9 4.5 5"/></svg></div>
+          <div class="stat-value" id="stat-team">–</div>
+          <div class="stat-label">Team members</div>
+        </div>
+        <div class="stat-tile accent-green">
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v12H8l-4 4Z"/></svg></div>
+          <div class="stat-value" id="stat-messages">–</div>
+          <div class="stat-label">Messages / project leads</div>
+        </div>
+        <div class="stat-tile accent-amber">
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="m7 14 3.5-4 3 3L18 9"/><circle cx="8" cy="8.5" r="1" fill="currentColor" stroke="none"/></svg></div>
+          <div class="stat-value" id="stat-projects">–</div>
+          <div class="stat-label">Demo projects uploaded</div>
+        </div>
+        <div class="stat-tile accent-blue">
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 20V10M9 20V4M15 20v-7M21 20V8"/></svg></div>
+          <div class="stat-value" id="stat-conv">–</div>
+          <div class="stat-label">Visits → leads rate</div>
+        </div>
+      </div>
+
+      <div class="dash-section-title">Traffic & engagement</div>
+      <div class="stat-grid">
+        <div class="stat-tile accent-cyan">
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div>
+          <div class="stat-value" id="stat-visits7">–</div>
+          <div class="stat-label">Visits, last 7 days</div>
+          <div class="stat-delta" id="stat-visits-delta">–</div>
+        </div>
+        <div class="stat-tile accent-blue">
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 3v9l6 3"/></svg></div>
+          <div class="stat-value" id="stat-sessions">–</div>
+          <div class="stat-label">Unique sessions, all time</div>
+        </div>
+        <div class="stat-tile accent-amber">
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v13M12 17l-4-4M12 17l4-4"/><path d="M5 21h14"/></svg></div>
+          <div class="stat-value" id="stat-scroll">–</div>
+          <div class="stat-label">Average scroll depth</div>
+        </div>
+        <div class="stat-tile accent-green">
+          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2.5"/><line x1="5" y1="18" x2="19" y2="18"/></svg></div>
+          <div class="stat-value" id="stat-mobile">–</div>
+          <div class="stat-label">Visits from mobile</div>
+        </div>
+      </div>
+
+      <div class="dash-section-title">Lead pipeline</div>
+      <div class="lead-pipeline" id="dash-lead-pipeline" style="margin-bottom:22px;"></div>
+      <div class="admin-card" style="margin-bottom:26px;">
+        <div class="admin-topbar" style="margin-bottom:10px;">
+          <h3 style="margin:0;">Recent leads</h3>
+          <button class="btn btn-ghost btn-sm" data-quick-panel="leads">View all leads</button>
+        </div>
+        <div id="dash-recent-leads"></div>
+      </div>
+
+      <div class="dash-grid-2" style="margin-top:16px;">
+        <div class="admin-card" style="margin-bottom:0;">
+          <h3>Site traffic — last 14 days</h3>
+          <div class="sub">Page views recorded in this browser, by day.</div>
+          <div id="traffic-chart"></div>
+        </div>
+        <div class="admin-card" style="margin-bottom:0;">
+          <h3>Scroll depth</h3>
+          <div class="sub">How far down the page visitors actually scroll.</div>
+          <div id="scroll-chart" class="bar-list"></div>
+        </div>
+      </div>
+
+      <div class="dash-grid-2" style="margin-top:16px;">
+        <div class="admin-card" style="margin-bottom:0;">
+          <h3>Where visitors come from</h3>
+          <div class="sub">First-touch source for each visit — direct, search, or a shared link.</div>
+          <div id="sources-chart" class="bar-list"></div>
+        </div>
+        <div class="admin-card" style="margin-bottom:0;">
+          <h3>Recent activity</h3>
+          <div class="sub">Latest page views, most recent first.</div>
+          <div id="activity-list" class="activity-list"></div>
+        </div>
+      </div>
+
+      <div class="dash-section-title">Service demand</div>
+      <div class="dash-grid-2">
+        <div class="admin-card" style="margin-bottom:0;">
+          <h3>Page interest (views + CTA clicks)</h3>
+          <div class="sub">Which service section gets scrolled to and which "Get this package" link gets clicked most.</div>
+          <div id="demand-interest-chart" class="bar-list"></div>
+        </div>
+        <div class="admin-card" style="margin-bottom:0;">
+          <h3>Actual inquiries by service</h3>
+          <div class="sub">Contact-form submissions, grouped by requested service — the clearest signal of market demand.</div>
+          <div id="demand-inquiry-chart" class="bar-list"></div>
+        </div>
+      </div>
+
+      <div class="dash-section-title">Projects by source</div>
+      <div class="admin-card">
+        <h3>Leads / project inquiries by referring link</h3>
+        <div class="sub">Every message is tagged with the site or link the visitor first arrived from — shows which channel is actually converting into work.</div>
+        <div id="leads-source-chart" class="bar-list"></div>
+      </div>
+
+    </section>
+
+    <!-- PACKAGES -->
+    <section class="admin-panel" id="panel-packages">
+      <div class="admin-topbar">
+        <h1>Services & Packages</h1>
+        <button class="btn btn-primary btn-sm" id="add-service-btn">+ Add service</button>
+      </div>
+      <div id="packages-editor"></div>
+    </section>
+
+    <!-- REVIEWS -->
+    <section class="admin-panel" id="panel-reviews">
+      <div class="admin-topbar">
+        <h1>Client Reviews</h1>
+        <button class="btn btn-primary btn-sm" id="add-review-btn">+ Add review</button>
+      </div>
+      <p class="muted" style="margin-bottom:14px;">Add as many client reviews as you like. Only enter genuine feedback from real clients — published reviews appear in the homepage carousel.</p>
+      <div class="admin-card">
+        <div class="row-2">
+          <div class="field"><label>Section title</label><input type="text" id="rv-set-title"></div>
+          <div class="field"><label>Business name (summary box)</label><input type="text" id="rv-set-biz"></div>
+        </div>
+        <div class="row-2">
+          <div class="field"><label>Button label</label><input type="text" id="rv-set-cta"></div>
+          <div class="field"><label>Button link</label><input type="text" id="rv-set-link"></div>
+        </div>
+        <div class="small-btn-row"><button class="btn btn-primary btn-sm" id="rv-set-save">Save section settings</button><span class="form-status" id="rv-set-status"></span></div>
+      </div>
+      <div id="reviews-editor"></div>
+    </section>
+
+    <!-- TEAM -->
+    <section class="admin-panel" id="panel-team">
+      <div class="admin-topbar">
+        <h1>Team</h1>
+        <button class="btn btn-primary btn-sm" id="add-team-btn">+ Add team member</button>
+      </div>
+      <div id="team-editor"></div>
+    </section>
+
+    <!-- DEMO PROJECTS -->
+    <section class="admin-panel" id="panel-projects">
+      <div class="admin-topbar">
+        <h1>Demo Projects</h1>
+      </div>
+      <div class="dash-note">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="16.3" r="0.6" fill="currentColor" stroke="none"/></svg>
+        <span>Each service below gets its own public gallery page (linked as "View demo projects" on the Services page). Up to 6 projects per service for now — that's easy to raise later (MAX_PROJECTS_PER_SERVICE in js/data.js).</span>
+      </div>
+      <div id="projects-editor"></div>
+    </section>
+
+    <!-- LEADS (CRM) -->
+    <section class="admin-panel" id="panel-leads">
+      <div class="admin-topbar">
+        <h1>Leads</h1>
+        <button class="btn btn-ghost btn-sm" id="export-leads-btn">Export CSV</button>
+      </div>
+      <div class="sub" style="margin:-10px 0 18px;">Every contact-form and package-inquiry submission lands here as a lead. Move it through the pipeline as you work it.</div>
+
+      <div class="lead-pipeline" id="lead-pipeline"></div>
+
+      <div class="leads-toolbar">
+        <input type="text" id="leads-search" placeholder="Search leads by name, company, or email…">
+        <select id="leads-status-filter">
+          <option value="">All statuses</option>
+          <option value="New">New</option>
+          <option value="Contacted">Contacted</option>
+          <option value="Qualified">Qualified</option>
+          <option value="Proposal Sent">Proposal Sent</option>
+          <option value="Negotiation">Negotiation</option>
+          <option value="Won">Won</option>
+          <option value="Lost">Lost</option>
+        </select>
+      </div>
+
+      <div id="leads-list"></div>
+    </section>
+
+    <!-- MESSAGES -->
+    <section class="admin-panel" id="panel-messages">
+      <div class="admin-topbar">
+        <h1>Messages</h1>
+        <button class="btn btn-ghost btn-sm" id="clear-messages-btn">Clear all</button>
+      </div>
+      <div class="sub" style="margin:-10px 0 18px;">Stored in this browser only — for a permanent shared inbox, configure EmailJS in Site Settings so messages also arrive by real email. Replying opens your email app addressed to the client — nothing is deleted when you reply, and only an administrator can clear messages.</div>
+      <div id="messages-list"></div>
+    </section>
+
+    <!-- SOCIAL LINKS -->
+    <section class="admin-panel" id="panel-social">
+      <div class="admin-topbar">
+        <h1>Social Links</h1>
+        <button class="btn btn-primary btn-sm" id="add-social-btn">+ Add link</button>
+      </div>
+      <div class="admin-card">
+        <h3>Footer social icons</h3>
+        <div class="sub">Type any platform name — Facebook, LinkedIn, Instagram, X / Twitter, YouTube, GitHub, TikTok, WhatsApp, Telegram, Discord, Pinterest, Snapchat, Threads — and the matching icon appears automatically on the left. Leave the link blank to hide that entry on the live site. Order here is the order shown in the footer.</div>
+        <div id="social-editor"></div>
+        <div class="small-btn-row">
+          <button class="btn btn-primary btn-sm" id="save-social-btn">Save social links</button>
+          <span class="form-status" id="social-status"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- GROWTH STATS -->
+    <section class="admin-panel" id="panel-stats">
+      <div class="admin-topbar">
+        <h1>Growth Stats</h1>
+        <button class="btn btn-primary btn-sm" id="add-stat-btn">+ Add data point</button>
+      </div>
+      <div class="admin-card">
+        <h3>Homepage chart</h3>
+        <div class="sub">Powers the animated chart on the homepage. Add one row per year (or quarter) with a label and a number — e.g. "2026" / "79".</div>
+        <div class="row-2">
+          <div class="field">
+            <label for="stat-headline">Chart headline</label>
+            <input type="text" id="stat-headline" placeholder="Trusted by growing businesses">
+          </div>
+          <div class="field">
+            <label for="stat-unit">Unit label (e.g. "clients", "projects")</label>
+            <input type="text" id="stat-unit" placeholder="clients">
+          </div>
+        </div>
+        <div class="field">
+          <label for="stat-subline">Chart subline</label>
+          <input type="text" id="stat-subline" placeholder="Clients closed and projects delivered, year over year.">
+        </div>
+        <div id="stats-editor" style="margin-top:8px;"></div>
+        <div class="small-btn-row">
+          <button class="btn btn-primary btn-sm" id="save-stats-btn">Save growth stats</button>
+          <span class="form-status" id="stats-status"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEO ASSISTANT -->
+    <section class="admin-panel" id="panel-seo">
+      <div class="admin-topbar"><h1>SEO Assistant</h1></div>
+      <div class="admin-card">
+        <h3>Plain text → SEO-ready syntax</h3>
+        <div class="sub">Describe a page, offer or service in normal words. This turns it into a search-optimised title, meta description, URL slug and focus keywords — checked against Google's length and best-practice rules.</div>
+        <div class="field">
+          <label for="seo-input">Your text</label>
+          <textarea id="seo-input" rows="4" placeholder="e.g. We build fast, mobile-friendly websites and custom web apps for small businesses in Pakistan, with SEO and ongoing support included."></textarea>
+        </div>
+        <div class="field">
+          <label for="seo-brand">Brand name to append to the title (optional)</label>
+          <input type="text" id="seo-brand" value="Bitvulex">
+        </div>
+        <button class="btn btn-primary btn-sm" id="seo-run-btn">Convert to SEO syntax</button>
+      </div>
+
+      <div id="seo-results" style="display:none;">
+        <div class="admin-card">
+          <div class="seo-score-wrap">
+            <div class="seo-score-ring" id="seo-score-ring" style="--pct:0;"><span id="seo-score-num">0</span></div>
+            <div class="seo-score-label"><b id="seo-score-title">SEO score</b>Based on length, keyword coverage and click-appeal.</div>
+          </div>
+          <ul class="seo-tip-list" id="seo-tips"></ul>
+        </div>
+
+        <div class="seo-layout">
+          <div class="admin-card" style="margin-bottom:0;">
+            <div class="seo-field">
+              <div class="seo-field-head"><label>SEO title</label><span class="seo-char-count" id="seo-title-count"></span></div>
+              <div class="seo-output-box" id="seo-out-title"></div>
+              <div class="small-btn-row"><button class="seo-copy-btn" data-copy-target="seo-out-title">Copy</button></div>
+            </div>
+            <div class="seo-field">
+              <div class="seo-field-head"><label>Meta description</label><span class="seo-char-count" id="seo-desc-count"></span></div>
+              <div class="seo-output-box" id="seo-out-desc"></div>
+              <div class="small-btn-row"><button class="seo-copy-btn" data-copy-target="seo-out-desc">Copy</button></div>
+            </div>
+            <div class="seo-field">
+              <div class="seo-field-head"><label>URL slug</label></div>
+              <div class="seo-output-box" id="seo-out-slug"></div>
+              <div class="small-btn-row"><button class="seo-copy-btn" data-copy-target="seo-out-slug">Copy</button></div>
+            </div>
+            <div class="seo-field" style="margin-bottom:0;">
+              <div class="seo-field-head"><label>Focus keywords</label></div>
+              <div id="seo-out-keywords"></div>
+            </div>
+          </div>
+
+          <div class="admin-card" style="margin-bottom:0;">
+            <h3>Google preview</h3>
+            <div class="sub">Roughly how this could appear in search results.</div>
+            <div class="seo-serp-preview">
+              <div class="serp-title" id="seo-serp-title"></div>
+              <div class="serp-url" id="seo-serp-url">www.bitvulex.com</div>
+              <div class="serp-desc" id="seo-serp-desc"></div>
+            </div>
+            <div class="seo-field" style="margin-top:20px; margin-bottom:0;">
+              <div class="seo-field-head"><label>Meta tags — paste into &lt;head&gt;</label></div>
+              <div class="seo-output-box" id="seo-out-tags" style="font-family:var(--font-mono); font-size:12.5px; white-space:pre-wrap;"></div>
+              <div class="small-btn-row"><button class="seo-copy-btn" data-copy-target="seo-out-tags">Copy</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="admin-panel" id="panel-settings">
+      <div class="admin-topbar"><h1>Site Settings</h1></div>
+
+      <div class="admin-card">
+        <h3>Site theme</h3>
+        <div class="sub">Sets the default look for every visitor. Visitors can still flip the toggle in the header for their own view, but new/first-time visitors always see this.</div>
+        <div class="row-2">
+          <label class="theme-option">
+            <input type="radio" name="site-theme" value="dark" id="theme-radio-dark">
+            <span>🌙 Dark (default)</span>
+          </label>
+          <label class="theme-option">
+            <input type="radio" name="site-theme" value="light" id="theme-radio-light">
+            <span>☀️ Light</span>
+          </label>
+        </div>
+        <div class="form-status" id="settings-theme-status"></div>
+      </div>
+
+      <div class="admin-card">
+        <h3>Contact inbox</h3>
+        <div class="sub">The email address shown on the Contact page and used as the mail recipient.</div>
+        <form id="settings-email-form">
+          <div class="field">
+            <label for="set-email">Receiving email address</label>
+            <input type="email" id="set-email" required>
+          </div>
+          <button class="btn btn-primary" type="submit">Save email</button>
+          <div class="form-status" id="settings-email-status"></div>
+        </form>
+      </div>
+
+      <div class="admin-card">
+        <h3>Automatic email delivery (EmailJS)</h3>
+        <div class="sub">Optional. Without this, submitted messages are saved here and open a pre-filled email draft for the visitor to send. With it, messages (including package inquiries) are emailed to you automatically at your notification email — set that under My Account. Create a free account at emailjs.com, then paste your IDs below.</div>
+        <form id="settings-emailjs-form">
+          <div class="row-2">
+            <div class="field">
+              <label for="set-ej-service">Service ID</label>
+              <input type="text" id="set-ej-service" placeholder="service_xxxxxxx">
+            </div>
+            <div class="field">
+              <label for="set-ej-template">Template ID</label>
+              <input type="text" id="set-ej-template" placeholder="template_xxxxxxx">
+            </div>
+          </div>
+          <div class="field">
+            <label for="set-ej-key">Public key</label>
+            <input type="text" id="set-ej-key" placeholder="public_key_xxxxxxx">
+          </div>
+          <button class="btn btn-primary" type="submit">Save EmailJS settings</button>
+          <div class="form-status" id="settings-emailjs-status"></div>
+        </form>
+      </div>
+
+      <div class="admin-card">
+        <h3>🔐 Two-factor login (email verification code)</h3>
+        <div class="sub">
+          Adds a one-time 6-digit code as a second login step, sent to each account's own email — even if someone gets a password, they can't get in without the inbox too.
+          Uses the same EmailJS Service ID and Public key entered above, in a second template. Create it the same way (Code view → paste <code>admin/email-otp-template.html</code>), then paste its Template ID below.
+        </div>
+        <form id="settings-otp-form">
+          <div class="field">
+            <label for="set-otp-template">OTP Template ID</label>
+            <input type="text" id="set-otp-template" placeholder="template_xxxxxxx">
+          </div>
+          <label class="theme-option" style="margin-bottom:16px;">
+            <input type="checkbox" id="set-otp-enabled">
+            <span>Require this code at every admin login</span>
+          </label>
+          <button class="btn btn-primary" type="submit">Save verification settings</button>
+          <div class="form-status" id="settings-otp-status"></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- USERS -->
+    <section class="admin-panel" id="panel-users">
+      <div class="admin-topbar">
+        <h1>Users & Roles</h1>
+        <button class="btn btn-primary btn-sm" id="add-user-btn">+ Add user</button>
+      </div>
+      <div class="admin-card">
+        <div class="sub">Administrator only. Create accounts, change anyone's role, username, email or password, and remove access. Node accounts can only reach Services & Packages, Demo Projects, Messages, Social Links, Growth Stats, SEO Assistant and Site Settings — Team, Users & Roles and My Account are administrator-only.</div>
+        <div class="table-scroll">
+        <table class="admin-table">
+          <thead><tr><th>Username</th><th>Email</th><th>Role</th><th></th></tr></thead>
+          <tbody id="users-table-body"></tbody>
+        </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- MY ACCOUNT -->
+    <section class="admin-panel" id="panel-account">
+      <div class="admin-topbar"><h1>My Account</h1></div>
+      <div class="admin-card" style="max-width:440px;">
+        <h3>Change my username</h3>
+        <div class="sub" id="account-role-display"></div>
+        <form id="account-username-form">
+          <div class="field">
+            <label for="acc-username">Username</label>
+            <input type="text" id="acc-username" required>
+          </div>
+          <button class="btn btn-primary" type="submit">Update username</button>
+          <div class="form-status" id="account-username-status"></div>
+        </form>
+      </div>
+      <div class="admin-card" style="max-width:440px;">
+        <h3>Notification email</h3>
+        <div class="sub">New messages from the contact form and package inquiries are emailed here (in addition to always appearing under Messages). Keep it current.</div>
+        <form id="account-email-form">
+          <div class="field">
+            <label for="acc-email">Email</label>
+            <input type="email" id="acc-email" required placeholder="name@example.com">
+          </div>
+          <button class="btn btn-primary" type="submit">Update email</button>
+          <div class="form-status" id="account-email-status"></div>
+        </form>
+      </div>
+      <div class="admin-card" style="max-width:440px;">
+        <h3>Change my password</h3>
+        <form id="account-pass-form">
+          <div class="field">
+            <label for="acc-current">Current password</label>
+            <div class="pass-field">
+              <input type="password" id="acc-current" required autocomplete="current-password">
+              <button type="button" class="pass-eye" data-eye-for="acc-current" aria-label="Show password" title="Show password">
+                <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a20.6 20.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a20.6 20.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="acc-new">New password</label>
+            <div class="pass-field">
+              <input type="password" id="acc-new" required minlength="6" autocomplete="new-password">
+              <button type="button" class="pass-eye" data-eye-for="acc-new" aria-label="Show password" title="Show password">
+                <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a20.6 20.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a20.6 20.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+          </div>
+          <button class="btn btn-primary" type="submit">Update password</button>
+          <div class="form-status" id="account-status"></div>
+        </form>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-topbar" style="margin-bottom:8px;">
+          <h3 style="margin:0;">Team activity log</h3>
+          <button class="btn btn-ghost btn-sm" id="clear-activity-log-btn">Clear log</button>
+        </div>
+        <div class="sub" id="activity-log-sub">Who logged in, when, and what they created, changed or removed across the panel. You can remove individual entries or clear the whole log.</div>
+        <div class="table-scroll">
+        <table class="admin-table">
+          <thead><tr><th>When</th><th>User</th><th>Role</th><th>Action</th><th></th></tr></thead>
+          <tbody id="activity-log-body"></tbody>
+        </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="../../js/data.js"></script>
+<script src="../../js/analytics.js"></script>
+<script src="../../js/seo.js"></script>
+<script src="../../js/main.js"></script>
+<script src="../../js/admin.js"></script>
+</body>
+</html>

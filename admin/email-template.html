@@ -1,0 +1,162 @@
+<!-- =========================================================
+     BITVULEX — Contact-form notification email template
+     ---------------------------------------------------------
+     Paste this whole file into EmailJS: Email Templates → your
+     template → "Code view" (the </> icon) → paste → Save.
+
+     It uses the exact variable names sent from the website, so no
+     renaming is needed:
+       {{name}}  {{email}}  {{phone}}  {{service}}  {{message}}
+       {{source}}  {{sent_on}}  {{to_email}}  {{reply_to}}
+
+     In the EmailJS template settings:
+       To email:     {{to_email}}
+       Reply To:     {{reply_to}}      (so hitting "Reply" goes to the client)
+       Subject:      New enquiry from {{name}} — Bitvulex
+     ========================================================= -->
+<div style="margin:0; padding:0; background-color:#060818;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#060818; padding:32px 16px;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px; background-color:#0e1226; border:1px solid #1c2534; border-radius:16px; overflow:hidden; font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+
+        <!-- Header -->
+        <tr>
+          <td style="background:linear-gradient(90deg,#8b7bff,#3b82f6); padding:22px 28px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="font-size:18px; font-weight:700; color:#060818; letter-spacing:-.01em;">
+                  Bitvulex
+                </td>
+                <td align="right" style="font-size:12px; font-weight:600; color:#060818; opacity:.8; text-transform:uppercase; letter-spacing:.06em;">
+                  New Website Enquiry
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Intro -->
+        <tr>
+          <td style="padding:28px 28px 4px 28px;">
+            <p style="margin:0 0 6px 0; font-size:20px; font-weight:700; color:#eef3fb;">
+              You've got a new lead
+            </p>
+            <p style="margin:0; font-size:14px; color:#aeb9cc; line-height:1.6;">
+              Sent from the contact form on bitvulex.com — reply to this email to respond directly to {{name}}.
+            </p>
+          </td>
+        </tr>
+
+        <!-- Details card -->
+        <tr>
+          <td style="padding:20px 28px 8px 28px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#131833; border:1px solid #1c2534; border-radius:12px;">
+              <tr>
+                <td style="padding:18px 20px; border-bottom:1px solid #1c2534;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td width="110" style="font-size:12px; font-weight:600; color:#6f7c93; text-transform:uppercase; letter-spacing:.04em; vertical-align:top; padding-right:12px;">Name</td>
+                      <td style="font-size:15px; color:#eef3fb; font-weight:600;">{{name}}</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:18px 20px; border-bottom:1px solid #1c2534;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td width="110" style="font-size:12px; font-weight:600; color:#6f7c93; text-transform:uppercase; letter-spacing:.04em; vertical-align:top; padding-right:12px;">Email</td>
+                      <td style="font-size:15px;"><a href="mailto:{{email}}" style="color:#b9adff; text-decoration:none;">{{email}}</a></td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:18px 20px; border-bottom:1px solid #1c2534;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td width="110" style="font-size:12px; font-weight:600; color:#6f7c93; text-transform:uppercase; letter-spacing:.04em; vertical-align:top; padding-right:12px;">Phone</td>
+                      <td style="font-size:15px; color:#eef3fb;">{{phone}}</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:18px 20px; border-bottom:1px solid #1c2534;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td width="110" style="font-size:12px; font-weight:600; color:#6f7c93; text-transform:uppercase; letter-spacing:.04em; vertical-align:top; padding-right:12px;">Service</td>
+                      <td style="font-size:15px; color:#eef3fb;">{{service}}</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:18px 20px; border-bottom:1px solid #1c2534;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td width="110" style="font-size:12px; font-weight:600; color:#6f7c93; text-transform:uppercase; letter-spacing:.04em; vertical-align:top; padding-right:12px;">Source</td>
+                      <td style="font-size:15px; color:#eef3fb;">{{source}}</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:18px 20px;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td width="110" style="font-size:12px; font-weight:600; color:#6f7c93; text-transform:uppercase; letter-spacing:.04em; vertical-align:top; padding-right:12px;">Received</td>
+                      <td style="font-size:15px; color:#eef3fb;">{{sent_on}}</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Message -->
+        <tr>
+          <td style="padding:20px 28px 8px 28px;">
+            <p style="margin:0 0 8px 0; font-size:12px; font-weight:600; color:#6f7c93; text-transform:uppercase; letter-spacing:.04em;">Project details</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#131833; border:1px solid #1c2534; border-radius:12px;">
+              <tr>
+                <td style="padding:18px 20px; font-size:15px; color:#eef3fb; line-height:1.7; white-space:pre-wrap;">{{message}}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- CTA -->
+        <tr>
+          <td style="padding:24px 28px 4px 28px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="border-radius:10px; background:linear-gradient(90deg,#8b7bff,#3b82f6);">
+                  <a href="mailto:{{email}}" style="display:inline-block; padding:12px 22px; font-size:14px; font-weight:700; color:#060818; text-decoration:none;">
+                    Reply to {{name}}
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding:26px 28px 24px 28px;">
+            <hr style="border:none; border-top:1px solid #1c2534; margin:0 0 18px 0;">
+            <p style="margin:0; font-size:12px; color:#6f7c93; line-height:1.6;">
+              This message was sent automatically from the contact form at
+              <a href="https://bitvulex.com" style="color:#6f7c93;">bitvulex.com</a>.
+              It was also saved to your Admin Panel under Messages.
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+</div>
